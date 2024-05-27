@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../App';
 
 interface DetailEleProps {
   id: string;
@@ -17,9 +18,11 @@ function DetailElement({
   amount,
 }: DetailEleProps) {
   const navigate = useNavigate();
+  const { setStateVal } = useAppContext();
 
   const navigateDetail = () => {
-    navigate(`/${id}`, { state: { id, date, item, description, amount } });
+    navigate(`/${id}`);
+    setStateVal({ id, date, item, description, amount });
   };
   return (
     <DatailContainer onClick={navigateDetail}>

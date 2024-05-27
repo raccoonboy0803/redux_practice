@@ -1,6 +1,6 @@
 import styled from 'styled-components';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../App';
 
 export interface StateProps {
   date: string;
@@ -11,17 +11,8 @@ export interface StateProps {
 }
 
 function Detail() {
-  const location = useLocation();
   const navigate = useNavigate();
-  const { state } = location;
-  const { id, date, item, description, amount }: StateProps = state || {};
-  const [stateVal, setStateVal] = useState<StateProps>({
-    item,
-    date,
-    description,
-    amount,
-    id,
-  });
+  const { stateVal, setStateVal } = useAppContext();
 
   const changeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
