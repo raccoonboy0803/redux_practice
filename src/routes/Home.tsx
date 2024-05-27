@@ -5,6 +5,14 @@ import MonthBtn from '../components/MonthBtn';
 import DetailElement from '../components/DetailElement.tsx';
 import { useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  addList,
+  saveState,
+  loadState,
+  RootState,
+  StateProp,
+} from '../store.ts';
 
 export interface MockDataTypes {
   id: string;
@@ -19,17 +27,25 @@ function Home() {
   const [curMonthData, setCurMonthData] = useState<MockDataTypes[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<number>(1);
   const location = useLocation();
+  const dispatch = useDispatch();
+  const lists = useSelector((state: RootState) => state.list);
   const { newData, delData } = location.state || {};
   const dateRef = useRef<HTMLInputElement>(null);
   const itemRef = useRef<HTMLInputElement>(null);
   const amountRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLInputElement>(null);
 
+  console.log('lists::', lists);
+
   useEffect(() => {
     const fetchData = async () => {
       const response = await fetch('/mockData.json');
       const data = await response.json();
-      localStorage.setItem('data', JSON.stringify(data));
+
+      saveState(data);
+      data.map((item: StateProp) => {
+        dispatch(addList(item));
+      });
       setMockData(data);
       const initialMonthData = data.filter(
         (item: MockDataTypes) => new Date(item.date).getMonth() + 1 === 1
@@ -41,11 +57,10 @@ function Home() {
       setCurMonthData(initialMonthData);
     };
 
-    const storedData = localStorage.getItem('data');
-    if (storedData) {
-      const parsedData = JSON.parse(storedData);
-      setMockData(parsedData);
-      const initialMonthData = parsedData.filter(
+    const storedData = loadState();
+    if (storedData.length >= 1) {
+      setMockData(storedData);
+      const initialMonthData = storedData.filter(
         (item: MockDataTypes) => new Date(item.date).getMonth() + 1 === 1
       );
       if (dateRef.current) {
@@ -96,11 +111,8 @@ function Home() {
   }, [newData, delData]);
 
   const clickMonthBtn = async (month: number) => {
-    const storedData = localStorage.getItem('data');
-
-    if (storedData !== null) {
-      const parsedData = JSON.parse(storedData);
-      const filterdData = parsedData.filter(
+    if (lists !== null) {
+      const filterdData = lists.filter(
         (data: MockDataTypes) => new Date(data.date).getMonth() + 1 === month
       );
       setCurMonthData(filterdData);
@@ -139,7 +151,7 @@ function Home() {
 
       const updatedData = [...mockData, newEntry];
       setMockData(updatedData);
-      localStorage.setItem('data', JSON.stringify(updatedData));
+      dispatch(addList(newEntry));
 
       const initialMonthData = updatedData.filter(
         (item: MockDataTypes) => new Date(item.date).getMonth() + 1 === 1

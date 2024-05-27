@@ -1,6 +1,8 @@
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
-import { useAppContext } from '../App';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, deleteList, updateList } from '../store';
 
 export interface StateProps {
   date: string;
@@ -12,7 +14,17 @@ export interface StateProps {
 
 function Detail() {
   const navigate = useNavigate();
-  const { stateVal, setStateVal } = useAppContext();
+  const { id } = useParams();
+  const currentData = useSelector((state: RootState) => state.list).find(
+    (item) => item.id === id
+  );
+  const [stateVal, setStateVal] = useState<StateProps>({
+    id: currentData?.id || '',
+    date: currentData?.date || '',
+    item: currentData?.item || '',
+    amount: currentData?.amount || 0,
+    description: currentData?.description || '',
+  });
 
   const changeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -23,21 +35,12 @@ function Detail() {
     }));
   };
 
+  const dispatch = useDispatch();
+
   const updateState = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    const prevData = localStorage.getItem('data');
-    if (prevData) {
-      const parsedData = JSON.parse(prevData);
-      const newData = parsedData.map((data: StateProps) => {
-        if (data.id === stateVal.id) {
-          return stateVal;
-        } else {
-          return data;
-        }
-      });
-      localStorage.setItem('data', JSON.stringify(newData));
-      navigate('/', { state: { newData: stateVal } });
-    }
+    dispatch(updateList(stateVal));
+    navigate('/');
   };
 
   const deleteState = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -46,15 +49,10 @@ function Detail() {
     if (!response) {
       return;
     }
-    const prevData = localStorage.getItem('data');
-    if (prevData) {
-      const parsedData = JSON.parse(prevData);
-      const filteredData = parsedData.filter(
-        (data: StateProps) => data.id !== stateVal.id
-      );
-      localStorage.setItem('data', JSON.stringify(filteredData));
-      navigate('/', { state: { delData: stateVal } });
+    if (id) {
+      dispatch(deleteList(id));
     }
+    navigate('/');
   };
 
   const moveToPrev = () => {

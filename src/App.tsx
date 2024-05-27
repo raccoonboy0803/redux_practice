@@ -1,9 +1,8 @@
 import { createGlobalStyle } from 'styled-components';
 import reset from 'styled-reset';
 import Home from './routes/Home';
-import Detail, { StateProps } from './routes/Detail';
+import Detail from './routes/Detail';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import React, { createContext, useContext, useState } from 'react';
 
 const router = createBrowserRouter([
   {
@@ -13,35 +12,12 @@ const router = createBrowserRouter([
   { path: '/:id', element: <Detail /> },
 ]);
 
-const AppContext = createContext<
-  | {
-      stateVal: StateProps;
-      setStateVal: React.Dispatch<React.SetStateAction<StateProps>>;
-    }
-  | undefined
->(undefined);
-
-export const useAppContext = () => {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useAppContext must be used within an AppProvider');
-  }
-  return context;
-};
-
 function App() {
-  const [stateVal, setStateVal] = useState<StateProps>({
-    date: '',
-    item: '',
-    amount: 0,
-    description: '',
-    id: '',
-  });
   return (
-    <AppContext.Provider value={{ stateVal, setStateVal }}>
+    <>
       <GlobalStyles />
       <RouterProvider router={router} />
-    </AppContext.Provider>
+    </>
   );
 }
 
